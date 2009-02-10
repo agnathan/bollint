@@ -51,19 +51,58 @@ usage() if $help;
     local $/ = '';
 
     # Input and Output is encoded in the UTF-8 strict character encoding.
-    my $input = shift;
-    if (defined($input) && -e $input) {
-        open(INPUT, "<:encoding(UTF-8)", $input);
-    } else {
-        *INPUT = *STDIN;
-    }
+    open(INPUT, "<:encoding(UTF-8)", shift) or die "Couldn't open for reading: $!\n";
 }
 
 my $tr = qr/\s*(?:\\\\|\\\@)\s*/;
 
 
 while (<INPUT>) {
-    # my $d = &isbalanced($_);
+    unless (m/^\$\$\$/) { 
+        s/:[  ]*/: /ig;
+        #s/\\\\Quand \\\\Paul\@\\\\eut\@\\\\\\\\dit cela, il\\\\\@ \\\\s\@\\\\\@ \\\\'\@\\\\\@ \\\\éleva\@\\\\\\\\/&matching($&)/g;
+        #s/\\Quand \\Paul\@\\eut\@\\\\dit cela, il\\\@ \\s\@\\\@ \\'\@\\\@ \\éleva\@\\\\//g;
+        # s/\\\\\\@ \\\\s\\@\\\\\\@ \\\\'\\@\\\\\\@ \\\\(\w+)\\@\\\\\\\\/\\\\\\\@s'$1\\\@\\\\/g;
+        # s/\\\\\\@ \\\\s\\@\\\\\\@ \\\\'\\@\\\\\\@ \\\\(\w+)\\@\\\\\\\\/@{[\&matching($&)]}/g;
+        # $_ = &matching($_);
+        s/\\\\\\@ \\\\(\w+)\\@\\\\\\\\/\\\\\\@ $1\\@\\\\/g;
+        s/\[\s*\\\\\s*\…\s*\\\\\s*\]/.../g;
+        s/\[\s*\…\s*\]/.../g;
+        s/\[\s*\.\.\.\s*\]/.../g;
+        s/\(\s*\.\.\.\s*\)/.../g;
+        s/\(\\\\/\\\\(/g;
+        s/\\\\\)/\)\\\\/g;
+        s/[  ]*(?:…|\.\.\.)[  ]*/ ... /g;
+
+        # BOL problem: quand un chiffre est suivi par un espace unsecable la lettre suivante est toujours en minuscules
+        s/(\d) ([A-Z])/$1 $2/g;
+        s/ō/o/g;
+        s/Ō/O/g;
+        s/ī/i/g;
+        s/Ī/I/g;
+        s/’/'/g;
+        s/‑/-/g;
+        s/−/-/g;
+         s/\\\\\[/\[\\\\/g;
+         s/\\\\\]/\]\\\\/g;
+        s/”/"/g;
+        s/“/"/g;
+        s/,#/, #/g;
+        s/[  ]*;[  ]+/ ; /g;
+        s/[  ]*:[  ]+/ : /g;
+        s/http : /http:/g;
+        s/[  ]*,/,/g;
+        s/«[  ]*/« /g;
+        s/[  ]*»/ »/g;
+        s/. " »/." »/g;
+        s/« \.\.\.  /« ... /g;
+        s/\.\.\.[  ]*\?/.../g;
+        s/\.\.\.[  ]*\./.../g;
+        s/\.\.\.[  ]*\!/.../g;
+        s/\\\@(-|–|−)/\\\@ -/g;
+        s/\\\\\\\\//g;
+        # s/\\\\\\@\\\\/\\\\ \\@ \\\\/g
+    }
     my @p = split /($tr)/;
 
     my %state;
@@ -84,15 +123,5 @@ while (<INPUT>) {
         print $part; 
     } 
 }
-
-# while ($subject =~ m/\d{1,3}/sxg) {
-#     # matched text = $&
-# }
-
-
-# sub isbalanced {
-#     my $count = split(/$tr/, shift);
-#     return ($count > 1 && $count % 2 == 1);
-# }
 
 close(INPUT);
