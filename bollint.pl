@@ -72,7 +72,7 @@ while (<INPUT>) {
         s/\(\s*\.\.\.\s*\)/.../g;
         s/\(\\\\/\\\\(/g;
         s/\\\\\)/\)\\\\/g;
-        s/[  ]*(?:…|\.\.\.)[  ]*/ ... /g;
+        s/([  ]*)(?:…|\.\.\.)([  ]*)/$1...$2/g;
 
         # BOL problem: quand un chiffre est suivi par un espace unsecable la lettre suivante est toujours en minuscules
         s/(\d) ([A-Z])/$1 $2/g;
@@ -97,7 +97,7 @@ while (<INPUT>) {
         s/«[  ]*/« /g;
         s/[  ]*»/ »/g;
         s/. " »/." »/g;
-        s/« \.\.\.  /« ... /g;
+        s/«[  ]*\.\.\./« .../g;
         s/\.\.\.[  ]*\?/.../g;
         s/\.\.\.[  ]*\./.../g;
         s/\.\.\.[  ]*\!/.../g;
@@ -131,7 +131,7 @@ while (<INPUT>) {
         # Removing spaces
         # Remove the space before a '...' if it is followed by a '»' 
         s/ \.\.\. » /... » /g;
-        s/[  ]*\.\.\./.../g;
+        #s/[  ]*\.\.\./.../g;
 
         # Remove spaces between formatting a '«'
         s/\![  ]*«/\! «/g;
@@ -149,7 +149,7 @@ while (<INPUT>) {
         s/Thème :\\% « Être en Christ/Thème :\\% « Être en Christ/g;
         # s/[  ]*«[  ]*/ « /g;
 
-
+        
         # Transform the figures and legend
         s/figure="i(\d+)\.jpg"\s+légende="([^"]*)"\s+crédit="([^"]*)"/\\\@$2\\\@\\\\ ==> figure $1\\\\/g; 
     }
