@@ -83,14 +83,16 @@ while (<INPUT>) {
         s/’/'/g;
         s/‑/-/g;
         s/−/-/g;
-         s/\\\\\[/\[\\\\/g;
-         s/\\\\\]/\]\\\\/g;
+        s/\\\\\[/\[\\\\/g;
+        s/\\\\\]/\]\\\\/g;
+
+        # Il faut supprimer l'espace insécable après le caractère °
+        s/°[ ]*/°/g;
         s/”/"/g;
         s/“/"/g;
         s/,#/, #/g;
         s/[  ]*;[  ]+/ ; /g;
         s/[  ]*:[  ]+/ : /g;
-        s/http : /http:/g;
         s/[  ]*,/,/g;
         s/«[  ]*/« /g;
         s/[  ]*»/ »/g;
@@ -101,10 +103,58 @@ while (<INPUT>) {
         s/\.\.\.[  ]*\!/.../g;
         s/\\\@(-|–|−)/\\\@ -/g;
         s/\\\\\\\\//g;
-        # s/\\\\\\@\\\\/\\\\ \\@ \\\\/g
+
+        # Verses should not have spaces before and after the ':'
+        s/(\d)[  ]*:[  ]+(\d)/$1:$2/g; 
+
+        # http: should not have ':' surrounded by spaces
+        s/http : /http:/g;
+
+        # BOL must not have a non-breakable space before '«'
+        # s/ « / « /g;
+        s/([,:%\.]) « /$1 « /g;     # Unless proceeded by one of the following: ':' ',' '%'
+
+        # Space before an '{'
+        s/\s?\{/ \{/g;
+      	# BOL formatting
+        # If a single ',' or ' ' is surrounded by italics then remove the italics
+      	s/\\\@([  ]*[, \.][  ]*)\\\@/$1/g;
+        s/\\\@\.\.\. /\\\@ ... /g;        
+
+        # Move the ':' to the outside
+        s/ :\\\\ /\\\\ :/g;
+
+        # Formatting that contains nothing but spaces ... can disappear.
+        s/\\!([  ]*)\\!/$1/g;
+
+        ############################################################
+        # Removing spaces
+        # Remove the space before a '...' if it is followed by a '»' 
+        s/ \.\.\. » /... » /g;
+        s/[  ]*\.\.\./.../g;
+
+        # Remove spaces between formatting a '«'
+        s/\![  ]*«/\! «/g;
+
+        # Strange cases
+        # s/ : \\% « / :\\% « /g;
+        s/ : \\%/ :\\%/g;
+        # s/ :\\% « / :\\% « /g;
+
+        # Suspected of being unimportant
+        s/ :[  ]*$/ :/g;
+
+        # Not Generalized
+        s/être « La primauté de Christ » ou « /être « La primauté de Christ » ou « /g;
+        s/Thème :\\% « Être en Christ/Thème :\\% « Être en Christ/g;
+        # s/[  ]*«[  ]*/ « /g;
+
+
+        # Transform the figures and legend
+        s/figure="i(\d+)\.jpg"\s+légende="([^"]*)"\s+crédit="([^"]*)"/\\\@$2\\\@\\\\ ==> figure $1\\\\/g; 
     }
     my @p = split /($tr)/;
-
+    
     my %state;
     foreach my $part (@p) {
         if ($part =~ m/($tr)/) {
